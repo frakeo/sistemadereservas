@@ -23,8 +23,6 @@
   .logo:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(47,129,247,.55);}
   .brand h1{font-size:22px;letter-spacing:.3px;}
   .brand p{color:var(--muted);font-size:13px;margin-top:2px;}
-
-  /* status de conexão */
   .conn{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
     padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#0c1524;margin-bottom:22px;}
   .conn .led{width:9px;height:9px;border-radius:50%;background:var(--muted);}
@@ -32,7 +30,6 @@
   .conn.off .led{background:var(--amber);box-shadow:0 0 8px var(--amber);}
   .conn.on{color:#7ee2a8;border-color:rgba(34,197,94,.3);}
   .conn.off{color:#fbbf24;border-color:rgba(245,158,11,.3);}
-
   .grid{display:grid;grid-template-columns:420px 1fr;gap:22px;}
   .grid.solo{grid-template-columns:1fr;max-width:540px;margin:0 auto;}
   @media(max-width:900px){.grid{grid-template-columns:1fr;}}
@@ -191,7 +188,7 @@
     </div>
   </div>
 
-  <p class="footer-note" id="footNote">💡 Configure o Firebase (veja o arquivo CONFIGURAR-FIREBASE.md) para salvar os dados na nuvem e compartilhar entre todos os dispositivos.</p>
+  <p class="footer-note" id="footNote">Carregando…</p>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -203,19 +200,15 @@ import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
          onSnapshot, query, orderBy, serverTimestamp, getDocs }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ================================================================
-   ⬇️ COLE AQUI A CONFIGURAÇÃO DO SEU FIREBASE ⬇️
-   (Veja o passo a passo no arquivo CONFIGURAR-FIREBASE.md)
-================================================================ */
 const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyAN6xgULtUlLlJ0_UPCRdpFELQY930IIF0",
+  authDomain: "reserva-c0887.firebaseapp.com",
+  projectId: "reserva-c0887",
+  storageBucket: "reserva-c0887.firebasestorage.app",
+  messagingSenderId: "1092843975278",
+  appId: "1:1092843975278:web:10efcbd162e92f2ca4ec7f",
+  measurementId: "G-B9CSZCB6YW"
 };
-/* ================================================================ */
 
 const USANDO_FIREBASE = !firebaseConfig.apiKey.includes("COLE_AQUI");
 let db = null, colRef = null;
@@ -228,7 +221,6 @@ if (USANDO_FIREBASE) {
   } catch(e){ console.error(e); }
 }
 
-// Expõe helpers do Firestore para o script principal
 window.FB = {
   ativo: USANDO_FIREBASE && !!db,
   colRef, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query,
@@ -421,11 +413,11 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 
 function toggleAdmin(){
   const p=$('recordsPanel'),g=$('grid');
-  const esc=p.style.display==='none';
-  p.style.display=esc?'block':'none';
-  $('btnExport').style.display=esc?'inline-block':'none';
-  g.classList.toggle('solo',!esc);
-  if(esc){render();toast('🔓 Painel de gestão liberado!');}
+  const abrir=p.style.display==='none';
+  p.style.display=abrir?'block':'none';
+  $('btnExport').style.display=abrir?'inline-block':'none';
+  g.classList.toggle('solo',!abrir);
+  if(abrir){render();toast('🔓 Painel de gestão liberado!');}
 }
 window.toggleAdmin=toggleAdmin;
 document.addEventListener('keydown',e=>{
@@ -446,12 +438,12 @@ function exportarCSV(){
 }
 window.exportarCSV=exportarCSV;
 
-/* ---------- Inicialização: escolhe nuvem ou local ---------- */
+/* ---------- Inicialização ---------- */
 function iniciarLocal(){
   modoNuvem=false;
   dados=JSON.parse(localStorage.getItem(LKEY)||'[]');
-  setConn('off','⚠ Modo local — dados salvos só neste dispositivo (Firebase não configurado)');
-  $('footNote').innerHTML='⚠️ <b>Modo local ativo.</b> Os dados ficam só neste navegador. Configure o Firebase (arquivo CONFIGURAR-FIREBASE.md) para salvar na nuvem e compartilhar entre dispositivos.';
+  setConn('off','⚠ Modo local — dados salvos só neste dispositivo');
+  $('footNote').innerHTML='⚠️ <b>Modo local ativo.</b> Os dados ficam só neste navegador.';
   render();
 }
 function iniciarNuvem(){
