@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Espaços - SRA</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="#" class="secret-export" id="exportarCSV" title="Exportar CSV">CSV</a>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand"><div class="brand-bar"></div><div><h1>Gestão de Espaços</h1><p>Coworking · Auditórios · Salas</p></div></div>
+      <a class="btn-top" href="index.html">Painel</a>
+    </header>
+    <main class="layout">
+      <aside class="panel form-panel">
+        <div class="panel-title" id="formTitle">Novo Cadastro</div>
+        <form id="formEvento">
+          <div class="field"><label for="sala">Local</label><select name="sala" id="sala" required><option value="COWORKING">Coworking</option><option value="AUDITÓRIO MEZANINO">Auditório Mezanino</option><option value="AUDITÓRIO 8° ANDAR">Auditório 8° Andar</option><option value="SALA 360°">Sala 360°</option><option value="SALA DE REUNIÃO 9° ANDAR">Sala de Reunião 9° Andar</option></select></div>
+          <div class="field"><label for="evento">Evento</label><input type="text" id="evento" name="evento" placeholder="Nome do evento" required></div>
+          <div class="field"><label for="organizador">Órgão</label><input type="text" id="organizador" name="organizador" placeholder="Órgão responsável" required></div>
+          <div class="field"><label for="data">Data</label><input type="date" id="data" name="data" required></div>
+          <div class="row-2"><div class="field"><label for="hora_inicio">Início</label><input type="time" id="hora_inicio" name="hora_inicio" required></div><div class="field"><label for="hora_fim">Término</label><input type="time" id="hora_fim" name="hora_fim" required></div></div>
+          <div class="field"><label for="publico">Nº de Pessoas</label><input type="text" id="publico" name="publico" placeholder="Estimativa" required></div>
+          <div id="mensagemConflito" class="message"></div>
+          <button type="submit" class="btn-primary" id="btnSalvar">Salvar Cadastro</button>
+          <button type="button" class="btn-secondary" id="btnLimparFormulario">Limpar formulário</button>
+        </form>
+      </aside>
+      <section class="panel content-panel">
+        <div class="tabs"><button class="tab-btn active">Registros Salvos</button></div>
+        <div class="view">
+          <div class="registros-layout">
+            <section class="registros-main">
+              <div class="registros-header"><div class="registros-title"><h2 id="tituloMesRegistros">Registros Salvos</h2><p>Histórico completo dos agendamentos</p></div><div class="registros-actions"><button type="button" class="btn-nav" id="btnMesAnterior">‹</button><button type="button" class="btn-nav" id="btnHoje">Hoje</button><button type="button" class="btn-nav" id="btnMesProximo">›</button></div></div>
+              <div class="chips" id="chipsRegistros"><button type="button" class="chip active" data-sala="">Todos os locais</button><button type="button" class="chip" data-sala="AUDITÓRIO 8° ANDAR">Auditório 8° Andar</button><button type="button" class="chip" data-sala="AUDITÓRIO MEZANINO">Auditório Mezanino</button><button type="button" class="chip" data-sala="COWORKING">Coworking</button><button type="button" class="chip" data-sala="SALA 360°">Sala 360°</button><button type="button" class="chip" data-sala="SALA DE REUNIÃO 9° ANDAR">Sala de Reunião 9° Andar</button></div>
+              <div class="filter-row"><label>De</label><input type="date" id="registroDataDe"><label>Até</label><input type="date" id="registroDataAte"><label>Status</label><select id="registroStatus"><option value="">Todos</option><option value="AGENDADO">Agendados</option><option value="CONCLUIDO">Concluídos</option><option value="CANCELADO">Cancelados</option></select><button type="button" class="btn-clear" id="btnLimparFiltros">Limpar</button></div>
+              <div class="registros-lista" id="listaRegistrosSalvos"><p class="empty-list">Carregando registros...</p></div>
+            </section>
+            <aside class="registros-detail"><div class="detail-dia" id="detailDia">Selecione um registro</div><div class="detail-sub" id="detailSemana">Histórico</div><div class="detail-line"></div><div id="detailContent"><p class="detail-empty">Clique em um registro salvo para visualizar os detalhes do agendamento.</p></div></aside>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
