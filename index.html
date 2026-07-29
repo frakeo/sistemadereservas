@@ -23,8 +23,6 @@
   .logo:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(47,129,247,.55);}
   .brand h1{font-size:22px;letter-spacing:.3px;}
   .brand p{color:var(--muted);font-size:13px;margin-top:2px;}
-
-  /* status de conexão */
   .conn{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
     padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#0c1524;margin-bottom:22px;}
   .conn .led{width:9px;height:9px;border-radius:50%;background:var(--muted);}
@@ -32,10 +30,9 @@
   .conn.off .led{background:var(--amber);box-shadow:0 0 8px var(--amber);}
   .conn.on{color:#7ee2a8;border-color:rgba(34,197,94,.3);}
   .conn.off{color:#fbbf24;border-color:rgba(245,158,11,.3);}
-
   .grid{display:grid;grid-template-columns:420px 1fr;gap:22px;}
   .grid.solo{grid-template-columns:1fr;max-width:540px;margin:0 auto;}
-  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}.grid.solo{max-width:100%;}}
   .panel{background:linear-gradient(180deg,var(--panel),#0e1626);border:1px solid var(--line);
     border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.35);}
   .panel h2{font-size:16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;
@@ -78,9 +75,7 @@
   .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .toolbar input{flex:1;min-width:180px;}
   .toolbar select{width:auto;padding:11px 34px 11px 13px;border-radius:11px;background:#0c1524;border:1px solid var(--line);
-    color:var(--text);font-size:14px;cursor:pointer;appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2395a6c4' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4'/></svg>");
-    background-repeat:no-repeat;background-position:right 12px center;}
+    color:var(--text);font-size:14px;cursor:pointer;appearance:none;}
   .btn-sm{padding:11px 15px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--line);
     background:#0c1524;color:var(--text);transition:.2s;white-space:nowrap;}
   .btn-sm:hover{border-color:var(--blue);}
@@ -155,7 +150,8 @@
             <div class="opt" data-val="Sala 360°">Sala 360°</div>
             <div class="opt" data-val="Coworking">Coworking</div>
             <div class="opt" data-val="Mezanino">Mezanino</div>
-            <div class="opt" data-val="Sala de vidro">Sala de vidro</div>
+            <div class="opt" data-val="Auditório 8° andar">Auditório 8° andar</div>
+            <div class="opt" data-val="Sala de reuniões 9° andar">Sala de reuniões 9° andar</div>
           </div>
         </div>
         <button class="btn" type="submit" id="submitBtn">💾 Salvar cadastro</button>
@@ -178,7 +174,8 @@
           <option value="Sala 360°">Sala 360°</option>
           <option value="Coworking">Coworking</option>
           <option value="Mezanino">Mezanino</option>
-          <option value="Sala de vidro">Sala de vidro</option>
+          <option value="Auditório 8° andar">Auditório 8° andar</option>
+          <option value="Sala de reuniões 9° andar">Sala de reuniões 9° andar</option>
         </select>
         <button class="btn-sm danger" onclick="limparTudo()">🗑️ Limpar tudo</button>
       </div>
@@ -191,21 +188,17 @@
     </div>
   </div>
 
-  <p class="footer-note" id="footNote">💡 Configure o Firebase (veja o arquivo CONFIGURAR-FIREBASE.md) para salvar os dados na nuvem e compartilhar entre todos os dispositivos.</p>
+  <p class="footer-note" id="footNote">💡 Configure o Firebase para salvar os dados na nuvem e compartilhar entre todos os dispositivos.</p>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- ===== Firebase ===== -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-         onSnapshot, query, orderBy, serverTimestamp, getDocs }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ================================================================
-   ⬇️ COLE AQUI A CONFIGURAÇÃO DO SEU FIREBASE ⬇️
-   (Veja o passo a passo no arquivo CONFIGURAR-FIREBASE.md)
+   COLE AQUI A CONFIGURAÇÃO DO SEU FIREBASE
 ================================================================ */
 const firebaseConfig = {
   apiKey: "COLE_AQUI",
@@ -228,16 +221,10 @@ if (USANDO_FIREBASE) {
   } catch(e){ console.error(e); }
 }
 
-// Expõe helpers do Firestore para o script principal
-window.FB = {
-  ativo: USANDO_FIREBASE && !!db,
-  colRef, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query,
-  orderBy, serverTimestamp, getDocs, db
-};
+window.FB = { ativo: USANDO_FIREBASE && !!db, colRef, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, db };
 window.dispatchEvent(new Event("fb-ready"));
 </script>
 
-<!-- ===== Lógica do sistema ===== -->
 <script>
 const $ = id => document.getElementById(id);
 const LKEY = 'reservas_salas_v2';
@@ -252,8 +239,6 @@ function toast(msg, err=false){
 function setConn(state, txt){
   const c=$('conn'); c.className='conn '+state; $('connTxt').textContent=txt;
 }
-
-/* ---------- Datas ---------- */
 function fmt(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fromISO(s){const[y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd);}
@@ -273,8 +258,6 @@ function periodoDisplay(d){
   if(d.tempo==='Diário'||!fim)return isoParaBR(ini);
   return isoParaBR(ini)+' a '+isoParaBR(fim);
 }
-
-/* ---------- Botões de opção ---------- */
 function wireGroup(g){
   document.querySelectorAll('#'+g+' .opt').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -309,32 +292,20 @@ function onDataInicioChange(){
 }
 window.onDataInicioChange=onDataInicioChange;
 
-/* ---------- Persistência (nuvem ou local) ---------- */
 function salvarLocal(){localStorage.setItem(LKEY,JSON.stringify(dados));}
-
 async function addRegistro(reg){
-  if(modoNuvem){
-    await window.FB.addDoc(window.FB.colRef,{...reg,ts:window.FB.serverTimestamp()});
-  }else{
-    reg.id=Date.now().toString(); dados.unshift(reg); salvarLocal(); render();
-  }
+  if(modoNuvem){ await window.FB.addDoc(window.FB.colRef,{...reg,ts:window.FB.serverTimestamp()}); }
+  else{ reg.id=Date.now().toString(); dados.unshift(reg); salvarLocal(); render(); }
 }
 async function updateRegistro(id,reg){
-  if(modoNuvem){
-    await window.FB.updateDoc(window.FB.doc(window.FB.db,"reservas",id),reg);
-  }else{
-    const i=dados.findIndex(d=>d.id===id); dados[i]={...dados[i],...reg}; salvarLocal(); render();
-  }
+  if(modoNuvem){ await window.FB.updateDoc(window.FB.doc(window.FB.db,"reservas",id),reg); }
+  else{ const i=dados.findIndex(d=>d.id===id); dados[i]={...dados[i],...reg}; salvarLocal(); render(); }
 }
 async function deleteRegistro(id){
-  if(modoNuvem){
-    await window.FB.deleteDoc(window.FB.doc(window.FB.db,"reservas",id));
-  }else{
-    dados=dados.filter(d=>d.id!==id); salvarLocal(); render();
-  }
+  if(modoNuvem){ await window.FB.deleteDoc(window.FB.doc(window.FB.db,"reservas",id)); }
+  else{ dados=dados.filter(d=>d.id!==id); salvarLocal(); render(); }
 }
 
-/* ---------- Submit ---------- */
 $('form').addEventListener('submit',async e=>{
   e.preventDefault();
   const nome=$('nome').value.trim(), orgao=$('orgao').value.trim();
@@ -345,7 +316,6 @@ $('form').addEventListener('submit',async e=>{
   const inicio=$('dtInicio').value, fim=(tempo==='Diário')?'':$('dtFim').value;
   if(!inicio){toast('Informe a data de início.',true);return;}
   if(tempo!=='Diário'&&fim&&fromISO(fim)<fromISO(inicio)){toast('Fim não pode ser antes do início.',true);return;}
-
   const reg={nome,orgao,tempo,sala,inicio,fim,createdAt:new Date().toISOString()};
   $('submitBtn').disabled=true;
   try{
@@ -374,14 +344,12 @@ function cancelarEdicao(){
   $('submitBtn').textContent='💾 Salvar cadastro';$('cancelBtn').style.display='none';
 }
 window.cancelarEdicao=cancelarEdicao;
-
 async function excluir(id){
   if(!confirm('Deseja excluir este registro?'))return;
   try{await deleteRegistro(id);toast('🗑️ Registro excluído.',true);}
   catch(e){toast('Erro ao excluir.',true);}
 }
 window.excluir=excluir;
-
 async function limparTudo(){
   if(dados.length===0){toast('Nada para limpar.',true);return;}
   if(!confirm('Isso vai apagar TODOS os registros. Continuar?'))return;
@@ -392,7 +360,6 @@ async function limparTudo(){
   }catch(e){toast('Erro ao limpar.',true);}
 }
 window.limparTudo=limparTudo;
-
 function render(){
   const busca=$('busca').value.toLowerCase();const fSala=$('filtroSala').value;
   const lista=dados.filter(d=>{
@@ -418,7 +385,6 @@ function render(){
 }
 window.render=render;
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
 function toggleAdmin(){
   const p=$('recordsPanel'),g=$('grid');
   const esc=p.style.display==='none';
@@ -435,7 +401,6 @@ document.addEventListener('keydown',e=>{
     exportarCSV();
   }
 });
-
 function exportarCSV(){
   if(dados.length===0){toast('Não há dados para exportar.',true);return;}
   let csv='Nome;Orgao;Tempo de uso;Periodo;Sala\n';
@@ -445,13 +410,11 @@ function exportarCSV(){
   toast('⬇️ Arquivo CSV exportado!');
 }
 window.exportarCSV=exportarCSV;
-
-/* ---------- Inicialização: escolhe nuvem ou local ---------- */
 function iniciarLocal(){
   modoNuvem=false;
   dados=JSON.parse(localStorage.getItem(LKEY)||'[]');
   setConn('off','⚠ Modo local — dados salvos só neste dispositivo (Firebase não configurado)');
-  $('footNote').innerHTML='⚠️ <b>Modo local ativo.</b> Os dados ficam só neste navegador. Configure o Firebase (arquivo CONFIGURAR-FIREBASE.md) para salvar na nuvem e compartilhar entre dispositivos.';
+  $('footNote').innerHTML='⚠️ <b>Modo local ativo.</b> Os dados ficam só neste navegador. Configure o Firebase para salvar na nuvem e compartilhar entre dispositivos.';
   render();
 }
 function iniciarNuvem(){
