@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Reservas de Salas</title>
+<style>
+  :root{
+    --bg:#0b1220;--panel:#111c31;--card:#152238;--line:#22314f;
+    --blue:#2f81f7;--blue-2:#4f9dff;--blue-soft:rgba(47,129,247,.15);
+    --text:#e8eefb;--muted:#95a6c4;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,rgba(47,129,247,.18),transparent),var(--bg);
+    color:var(--text);min-height:100vh;padding:28px 18px;}
+  .wrap{max-width:1150px;margin:0 auto;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#1b4fb0);
+    display:grid;place-items:center;font-size:26px;box-shadow:0 8px 24px rgba(47,129,247,.35);
+    cursor:pointer;transition:.2s;user-select:none;}
+  .logo:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(47,129,247,.55);}
+  .brand h1{font-size:22px;letter-spacing:.3px;}
+  .brand p{color:var(--muted);font-size:13px;margin-top:2px;}
+  .conn{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+    padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#0c1524;margin-bottom:22px;}
+  .conn .led{width:9px;height:9px;border-radius:50%;background:var(--muted);}
+  .conn.on .led{background:var(--green);box-shadow:0 0 8px var(--green);}
+  .conn.off .led{background:var(--amber);box-shadow:0 0 8px var(--amber);}
+  .conn.on{color:#7ee2a8;border-color:rgba(34,197,94,.3);}
+  .conn.off{color:#fbbf24;border-color:rgba(245,158,11,.3);}
+  .grid{display:grid;grid-template-columns:420px 1fr;gap:22px;}
+  .grid.solo{grid-template-columns:1fr;max-width:540px;margin:0 auto;}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+  .panel{background:linear-gradient(180deg,var(--panel),#0e1626);border:1px solid var(--line);
+    border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.35);}
+  .panel h2{font-size:16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;
+    padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .panel h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue);}
+  .field{margin-bottom:18px;}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600;}
+  input{width:100%;padding:12px 13px;border-radius:11px;background:#0c1524;border:1px solid var(--line);
+    color:var(--text);font-size:14px;outline:none;transition:.2s;}
+  input::placeholder{color:#5f7191;}
+  input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .opt{padding:12px 10px;border-radius:11px;cursor:pointer;background:#0c1524;border:1px solid var(--line);
+    color:var(--text);font-size:14px;font-weight:600;text-align:center;transition:.18s;user-select:none;}
+  .opt:hover{border-color:var(--blue);color:var(--blue-2);}
+  .opt.active{background:linear-gradient(135deg,var(--blue),#1b4fb0);border-color:var(--blue);color:#fff;
+    box-shadow:0 6px 16px rgba(47,129,247,.4);}
+  .preview{margin-top:12px;display:none;background:rgba(47,129,247,.1);border:1px solid rgba(47,129,247,.3);
+    border-radius:11px;padding:13px;font-size:14px;}
+  .preview.show{display:block;}
+  .preview .ptitle{display:flex;align-items:center;gap:8px;color:var(--blue-2);font-weight:700;margin-bottom:10px;font-size:13px;}
+  .datebox{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .datebox.solo{grid-template-columns:1fr;}
+  .datebox label{font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .datebox input[type=date]{width:100%;padding:10px 11px;border-radius:10px;background:#0c1524;
+    border:1px solid var(--line);color:var(--text);font-size:14px;outline:none;color-scheme:dark;transition:.2s;}
+  .datebox input[type=date]:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
+  .btn{width:100%;padding:13px;border:none;border-radius:12px;cursor:pointer;font-size:15px;font-weight:700;
+    letter-spacing:.3px;background:linear-gradient(135deg,var(--blue),#1b4fb0);color:#fff;
+    box-shadow:0 8px 20px rgba(47,129,247,.35);transition:.2s;margin-top:6px;}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(47,129,247,.5);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn.ghost{background:#0c1524;border:1px solid var(--line);box-shadow:none;color:var(--muted);font-weight:600;}
+  .btn.ghost:hover{border-color:var(--blue);color:var(--text);transform:none;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  @media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;}
+  .stat .n{font-size:24px;font-weight:800;color:var(--blue-2);}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px;}
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .toolbar input{flex:1;min-width:180px;}
+  .toolbar select{width:auto;padding:11px 34px 11px 13px;border-radius:11px;background:#0c1524;border:1px solid var(--line);
+    color:var(--text);font-size:14px;cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2395a6c4' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;}
+  .btn-sm{padding:11px 15px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--line);
+    background:#0c1524;color:var(--text);transition:.2s;white-space:nowrap;}
+  .btn-sm:hover{border-color:var(--blue);}
+  .btn-sm.danger:hover{border-color:var(--red);color:var(--red);}
+  .table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--line);}
+  table{width:100%;border-collapse:collapse;min-width:720px;}
+  th{background:#0c1524;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;
+    text-align:left;padding:13px 14px;position:sticky;top:0;}
+  td{padding:13px 14px;border-top:1px solid var(--line);font-size:14px;}
+  tbody tr:hover{background:rgba(47,129,247,.06);}
+  .tag{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;}
+  .tag.sala{background:var(--blue-soft);color:var(--blue-2);border:1px solid rgba(47,129,247,.3);}
+  .tag.tempo{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+  .periodo{font-size:13px;color:var(--text);white-space:nowrap;}
+  .icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#0c1524;
+    color:var(--muted);cursor:pointer;font-size:14px;transition:.2s;}
+  .icon-btn:hover{border-color:var(--blue);color:var(--blue-2);}
+  .icon-btn.del:hover{border-color:var(--red);color:var(--red);}
+  .act{display:flex;gap:6px;justify-content:flex-end;}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);}
+  .empty .em{font-size:40px;display:block;margin-bottom:10px;opacity:.6;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--green);
+    padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);
+    font-size:14px;z-index:100;transition:.35s;max-width:90%;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.err{border-left-color:var(--red);}
+  .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" title="Painel de gestão" onclick="toggleAdmin()">🗂️</div>
+      <div>
+        <h1>Sistema de Reservas de Salas</h1>
+        <p>Cadastro e controle de uso dos espaços</p>
+      </div>
+    </div>
+    <button class="btn ghost" id="btnExport" style="width:auto;padding:11px 18px;display:none;" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+  </header>
+
+  <div class="conn" id="conn"><span class="led"></span><span id="connTxt">Conectando ao banco de dados…</span></div>
+
+  <div class="grid solo" id="grid">
+    <div class="panel">
+      <h2><span class="dot"></span> <span id="formTitle">Novo Cadastro</span></h2>
+      <form id="form">
+        <input type="hidden" id="editId">
+        <div class="field"><label>Nome</label><input type="text" id="nome" placeholder="Nome completo" required></div>
+        <div class="field"><label>Órgão</label><input type="text" id="orgao" placeholder="Nome do órgão / empresa" required></div>
+        <div class="field">
+          <label>Tempo de uso</label>
+          <div class="opts" id="tempoGroup">
+            <div class="opt" data-val="Diário">Diário</div>
+            <div class="opt" data-val="Semanal">Semanal</div>
+            <div class="opt" data-val="Quinzenal">Quinzenal</div>
+            <div class="opt" data-val="Mensal">Mensal</div>
+          </div>
+          <div class="preview" id="preview">
+            <div class="ptitle"><span>📅</span> Período (editável)</div>
+            <div class="datebox" id="datebox">
+              <div><label>Data de início</label><input type="date" id="dtInicio" onchange="onDataInicioChange()"></div>
+              <div id="fimWrap"><label>Data de fim</label><input type="date" id="dtFim"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Sala</label>
+          <div class="opts" id="salaGroup">
+            <div class="opt" data-val="Sala 360°">Sala 360°</div>
+            <div class="opt" data-val="Coworking">Coworking</div>
+            <div class="opt" data-val="Mezanino">Mezanino</div>
+            <div class="opt" data-val="Sala de vidro">Sala de vidro</div>
+          </div>
+        </div>
+        <button class="btn" type="submit" id="submitBtn">💾 Salvar cadastro</button>
+        <button class="btn ghost" type="button" id="cancelBtn" style="display:none;margin-top:10px;" onclick="cancelarEdicao()">Cancelar edição</button>
+      </form>
+    </div>
+
+    <div class="panel" id="recordsPanel" style="display:none;">
+      <h2><span class="dot"></span> Registros salvos</h2>
+      <div class="stats">
+        <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Total</div></div>
+        <div class="stat"><div class="n" id="stDiario">0</div><div class="l">Diário</div></div>
+        <div class="stat"><div class="n" id="stSemanal">0</div><div class="l">Semanal</div></div>
+        <div class="stat"><div class="n" id="stMensal">0</div><div class="l">Quinz./Mensal</div></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="busca" placeholder="🔍 Buscar por nome ou órgão..." oninput="render()">
+        <select id="filtroSala" onchange="render()">
+          <option value="">Todas as salas</option>
+          <option value="Sala 360°">Sala 360°</option>
+          <option value="Coworking">Coworking</option>
+          <option value="Mezanino">Mezanino</option>
+          <option value="Sala de vidro">Sala de vidro</option>
+        </select>
+        <button class="btn-sm danger" onclick="limparTudo()">🗑️ Limpar tudo</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Órgão</th><th>Tempo</th><th>Período</th><th>Sala</th><th style="text-align:right;">Ações</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note" id="footNote">Carregando…</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== Firebase ===== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+         onSnapshot, query, orderBy, serverTimestamp, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAN6xgULtUlLlJ0_UPCRdpFELQY930IIF0",
+  authDomain: "reserva-c0887.firebaseapp.com",
+  projectId: "reserva-c0887",
+  storageBucket: "reserva-c0887.firebasestorage.app",
+  messagingSenderId: "1092843975278",
+  appId: "1:1092843975278:web:10efcbd162e92f2ca4ec7f",
+  measurementId: "G-B9CSZCB6YW"
+};
+
+const USANDO_FIREBASE = !firebaseConfig.apiKey.includes("COLE_AQUI");
+let db = null, colRef = null;
+
+if (USANDO_FIREBASE) {
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    colRef = collection(db, "reservas");
+  } catch(e){ console.error(e); }
+}
+
+window.FB = {
+  ativo: USANDO_FIREBASE && !!db,
+  colRef, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query,
+  orderBy, serverTimestamp, getDocs, db
+};
+window.dispatchEvent(new Event("fb-ready"));
+</script>
+
+<!-- ===== Lógica do sistema ===== -->
+<script>
+const $ = id => document.getElementById(id);
+const LKEY = 'reservas_salas_v2';
+let dados = [];
+let editBaseISO = null;
+let modoNuvem = false;
+
+function toast(msg, err=false){
+  const t=$('toast'); t.textContent=msg; t.className='toast show'+(err?' err':'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',2600);
+}
+function setConn(state, txt){
+  const c=$('conn'); c.className='conn '+state; $('connTxt').textContent=txt;
+}
+
+/* ---------- Datas ---------- */
+function fmt(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fromISO(s){const[y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd);}
+function isoParaBR(s){if(!s)return'';const[y,m,dd]=s.split('-');return dd+'/'+m+'/'+y;}
+function defaultDatas(baseISO,tempo){
+  const start=baseISO?new Date(baseISO):new Date(); start.setHours(0,0,0,0);
+  const end=new Date(start);
+  if(tempo==='Diário')return{inicio:toISO(start),fim:''};
+  if(tempo==='Semanal')end.setDate(start.getDate()+6);
+  else if(tempo==='Quinzenal')end.setDate(start.getDate()+14);
+  else if(tempo==='Mensal'){end.setMonth(start.getMonth()+1);end.setDate(end.getDate()-1);}
+  return{inicio:toISO(start),fim:toISO(end)};
+}
+function periodoDisplay(d){
+  let ini=d.inicio,fim=d.fim;
+  if(!ini){const def=defaultDatas(d.createdAt,d.tempo);ini=def.inicio;fim=def.fim;}
+  if(d.tempo==='Diário'||!fim)return isoParaBR(ini);
+  return isoParaBR(ini)+' a '+isoParaBR(fim);
+}
+
+/* ---------- Botões de opção ---------- */
+function wireGroup(g){
+  document.querySelectorAll('#'+g+' .opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      btn.parentNode.querySelectorAll('.opt').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      if(g==='tempoGroup')atualizarPreview();
+    });
+  });
+}
+function getSel(g){const el=document.querySelector('#'+g+' .opt.active');return el?el.dataset.val:'';}
+function setSel(g,v){document.querySelectorAll('#'+g+' .opt').forEach(b=>b.classList.toggle('active',b.dataset.val===v));}
+wireGroup('tempoGroup');wireGroup('salaGroup');
+
+function atualizarPreview(keep){
+  const tempo=getSel('tempoGroup');
+  if(!tempo){$('preview').className='preview';return;}
+  $('preview').className='preview show';
+  const diario=(tempo==='Diário');
+  $('fimWrap').style.display=diario?'none':'block';
+  $('datebox').className=diario?'datebox solo':'datebox';
+  if(!keep){const def=defaultDatas(editBaseISO,tempo);$('dtInicio').value=def.inicio;$('dtFim').value=def.fim;}
+  else if(diario){$('dtFim').value='';}
+}
+function onDataInicioChange(){
+  const tempo=getSel('tempoGroup');
+  if(!tempo||tempo==='Diário'||!$('dtInicio').value)return;
+  const start=fromISO($('dtInicio').value);const end=new Date(start);
+  if(tempo==='Semanal')end.setDate(start.getDate()+6);
+  else if(tempo==='Quinzenal')end.setDate(start.getDate()+14);
+  else if(tempo==='Mensal'){end.setMonth(start.getMonth()+1);end.setDate(end.getDate()-1);}
+  $('dtFim').value=toISO(end);
+}
+window.onDataInicioChange=onDataInicioChange;
+
+/* ---------- Persistência (nuvem ou local) ---------- */
+function salvarLocal(){localStorage.setItem(LKEY,JSON.stringify(dados));}
+
+async function addRegistro(reg){
+  if(modoNuvem){
+    await window.FB.addDoc(window.FB.colRef,{...reg,ts:window.FB.serverTimestamp()});
+  }else{
+    reg.id=Date.now().toString(); dados.unshift(reg); salvarLocal(); render();
+  }
+}
+async function updateRegistro(id,reg){
+  if(modoNuvem){
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"reservas",id),reg);
+  }else{
+    const i=dados.findIndex(d=>d.id===id); dados[i]={...dados[i],...reg}; salvarLocal(); render();
+  }
+}
+async function deleteRegistro(id){
+  if(modoNuvem){
+    await window.FB.deleteDoc(window.FB.doc(window.FB.db,"reservas",id));
+  }else{
+    dados=dados.filter(d=>d.id!==id); salvarLocal(); render();
+  }
+}
+
+/* ---------- Submit ---------- */
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const nome=$('nome').value.trim(), orgao=$('orgao').value.trim();
+  const tempo=getSel('tempoGroup'), sala=getSel('salaGroup');
+  if(!nome||!orgao){toast('Preencha nome e órgão.',true);return;}
+  if(!tempo){toast('Selecione o tempo de uso.',true);return;}
+  if(!sala){toast('Selecione a sala.',true);return;}
+  const inicio=$('dtInicio').value, fim=(tempo==='Diário')?'':$('dtFim').value;
+  if(!inicio){toast('Informe a data de início.',true);return;}
+  if(tempo!=='Diário'&&fim&&fromISO(fim)<fromISO(inicio)){toast('Fim não pode ser antes do início.',true);return;}
+
+  const reg={nome,orgao,tempo,sala,inicio,fim,createdAt:new Date().toISOString()};
+  $('submitBtn').disabled=true;
+  try{
+    if($('editId').value){await updateRegistro($('editId').value,{nome,orgao,tempo,sala,inicio,fim});toast('✏️ Registro atualizado!');}
+    else{await addRegistro(reg);toast('✅ Cadastro salvo'+(modoNuvem?' na nuvem!':'!'));}
+    cancelarEdicao();
+  }catch(err){console.error(err);toast('Erro ao salvar. Verifique a conexão.',true);}
+  $('submitBtn').disabled=false;
+});
+
+function editar(id){
+  const d=dados.find(x=>x.id===id);if(!d)return;
+  $('editId').value=d.id;$('nome').value=d.nome;$('orgao').value=d.orgao;
+  editBaseISO=d.createdAt;setSel('tempoGroup',d.tempo);setSel('salaGroup',d.sala);
+  atualizarPreview(true);
+  const def=d.inicio?{inicio:d.inicio,fim:d.fim}:defaultDatas(d.createdAt,d.tempo);
+  $('dtInicio').value=def.inicio||'';$('dtFim').value=(d.tempo==='Diário')?'':(def.fim||'');
+  $('formTitle').textContent='Editar Cadastro';$('submitBtn').textContent='💾 Atualizar cadastro';
+  $('cancelBtn').style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+}
+window.editar=editar;
+function cancelarEdicao(){
+  $('form').reset();$('editId').value='';editBaseISO=null;
+  document.querySelectorAll('.opt.active').forEach(b=>b.classList.remove('active'));
+  $('preview').className='preview';$('formTitle').textContent='Novo Cadastro';
+  $('submitBtn').textContent='💾 Salvar cadastro';$('cancelBtn').style.display='none';
+}
+window.cancelarEdicao=cancelarEdicao;
+
+async function excluir(id){
+  if(!confirm('Deseja excluir este registro?'))return;
+  try{await deleteRegistro(id);toast('🗑️ Registro excluído.',true);}
+  catch(e){toast('Erro ao excluir.',true);}
+}
+window.excluir=excluir;
+
+async function limparTudo(){
+  if(dados.length===0){toast('Nada para limpar.',true);return;}
+  if(!confirm('Isso vai apagar TODOS os registros. Continuar?'))return;
+  try{
+    if(modoNuvem){for(const d of dados){await deleteRegistro(d.id);}}
+    else{dados=[];salvarLocal();render();}
+    toast('🗑️ Todos os registros foram apagados.',true);
+  }catch(e){toast('Erro ao limpar.',true);}
+}
+window.limparTudo=limparTudo;
+
+function render(){
+  const busca=$('busca').value.toLowerCase();const fSala=$('filtroSala').value;
+  const lista=dados.filter(d=>{
+    const m=(d.nome+' '+d.orgao).toLowerCase().includes(busca);
+    return m&&(!fSala||d.sala===fSala);
+  });
+  $('stTotal').textContent=dados.length;
+  $('stDiario').textContent=dados.filter(d=>d.tempo==='Diário').length;
+  $('stSemanal').textContent=dados.filter(d=>d.tempo==='Semanal').length;
+  $('stMensal').textContent=dados.filter(d=>d.tempo==='Mensal'||d.tempo==='Quinzenal').length;
+  const tb=$('tbody');
+  if(lista.length===0){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><span class="em">📭</span>Nenhum registro encontrado</div></td></tr>`;return;}
+  tb.innerHTML=lista.map(d=>`<tr>
+    <td><strong>${esc(d.nome)}</strong></td>
+    <td>${esc(d.orgao)}</td>
+    <td><span class="tag tempo">${esc(d.tempo)}</span></td>
+    <td><span class="periodo">📅 ${esc(periodoDisplay(d))}</span></td>
+    <td><span class="tag sala">${esc(d.sala)}</span></td>
+    <td><div class="act">
+      <button class="icon-btn" title="Editar" onclick="editar('${d.id}')">✏️</button>
+      <button class="icon-btn del" title="Excluir" onclick="excluir('${d.id}')">🗑️</button>
+    </div></td></tr>`).join('');
+}
+window.render=render;
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function toggleAdmin(){
+  const p=$('recordsPanel'),g=$('grid');
+  const abrir=p.style.display==='none';
+  p.style.display=abrir?'block':'none';
+  $('btnExport').style.display=abrir?'inline-block':'none';
+  g.classList.toggle('solo',!abrir);
+  if(abrir){render();toast('🔓 Painel de gestão liberado!');}
+}
+window.toggleAdmin=toggleAdmin;
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='e'){
+    e.preventDefault();
+    if($('recordsPanel').style.display==='none')toggleAdmin();
+    exportarCSV();
+  }
+});
+
+function exportarCSV(){
+  if(dados.length===0){toast('Não há dados para exportar.',true);return;}
+  let csv='Nome;Orgao;Tempo de uso;Periodo;Sala\n';
+  dados.forEach(d=>{csv+=`"${d.nome}";"${d.orgao}";"${d.tempo}";"${periodoDisplay(d)}";"${d.sala}"\n`;});
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reservas_salas.csv';a.click();
+  toast('⬇️ Arquivo CSV exportado!');
+}
+window.exportarCSV=exportarCSV;
+
+/* ---------- Inicialização ---------- */
+function iniciarLocal(){
+  modoNuvem=false;
+  dados=JSON.parse(localStorage.getItem(LKEY)||'[]');
+  setConn('off','⚠ Modo local — dados salvos só neste dispositivo');
+  $('footNote').innerHTML='⚠️ <b>Modo local ativo.</b> Os dados ficam só neste navegador.';
+  render();
+}
+function iniciarNuvem(){
+  modoNuvem=true;
+  setConn('on','✅ Conectado à nuvem — dados compartilhados entre todos os dispositivos');
+  $('footNote').innerHTML='☁️ <b>Salvando na nuvem (Firebase).</b> Os cadastros aparecem em tempo real em qualquer dispositivo.';
+  const q=window.FB.query(window.FB.colRef,window.FB.orderBy('ts','desc'));
+  window.FB.onSnapshot(q,snap=>{
+    dados=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    render();
+  },err=>{
+    console.error(err);
+    toast('Falha ao conectar. Usando modo local.',true);
+    iniciarLocal();
+  });
+}
+function boot(){
+  if(window.FB && window.FB.ativo){ try{ iniciarNuvem(); }catch(e){ iniciarLocal(); } }
+  else { iniciarLocal(); }
+}
+if(window.FB){ boot(); } else { window.addEventListener('fb-ready',boot,{once:true}); }
+</script>
+</body>
+</html>
