@@ -175,10 +175,12 @@
         <input type="text" id="busca" placeholder="🔍 Buscar por nome ou órgão..." oninput="render()">
         <select id="filtroSala" onchange="render()">
           <option value="">Todas as salas</option>
-          <option value="Sala 360°">Sala 360°</option>
-          <option value="Coworking">Coworking</option>
-          <option value="Mezanino">Mezanino</option>
-          <option value="Sala de vidro">Sala de vidro</option>
+          <div class="opt" data-val="Sala 360°">Sala 360°</div>
+          <div class="opt" data-val="Coworking">Coworking</div>
+          <div class="opt" data-val="Mezanino">Mezanino</div>
+          <div class="opt" data-val="Auditório 8° andar">Auditório 8° andar</div>
+          <div class="opt" data-val="Sala de reuniões 9° andar">Sala de reuniões 9° andar</div>
+          
         </select>
         <button class="btn-sm danger" onclick="limparTudo()">🗑️ Limpar tudo</button>
       </div>
@@ -198,38 +200,59 @@
 
 <!-- ===== Firebase ===== -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-         onSnapshot, query, orderBy, serverTimestamp, getDocs }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* ================================================================
-   ⬇️ COLE AQUI A CONFIGURAÇÃO DO SEU FIREBASE ⬇️
-   (Veja o passo a passo no arquivo CONFIGURAR-FIREBASE.md)
-================================================================ */
-const firebaseConfig = {2  apiKey: "AIzaSyAN6xgULtUlLlJ0_UPCRdpFELQY930IIF0",3  authDomain: "reserva-c0887.firebaseapp.com",4  projectId: "reserva-c0887",5  storageBucket: "reserva-c0887.firebasestorage.app",6  messagingSenderId: "1092843975278",7  appId: "1:1092843975278:web:10efcbd162e92f2ca4ec7f",8  measurementId: "G-B9CSZCB6YW"9};Mostrar mais linhas
-
-/* ================================================================ */
-
-const USANDO_FIREBASE = !firebaseConfig.apiKey.includes("COLE_AQUI");
-let db = null, colRef = null;
-
-if (USANDO_FIREBASE) {
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+          getFirestore,
+          collection,
+          addDoc,
+          updateDoc,
+          deleteDoc,
+          doc,
+          onSnapshot,
+          query,
+          orderBy,
+          serverTimestamp,
+          getDocs17
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAN6xgULtUlLlJ0_UPCRdpFELQY930IIF0",
+    authDomain: "reserva-c0887.firebaseapp.com",
+    projectId: "reserva-c0887",
+    storageBucket: "reserva-c0887.firebasestorage.app",
+    messagingSenderId: "1092843975278",
+    appId: "1:1092843975278:web:10efcbd162e92f2ca4ec7f",
+    measurementId: "G-B9CSZCB6YW"27
+  };
+  let db = null;
+  let colRef = null;
+  let conectado = false;
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     colRef = collection(db, "reservas");
-  } catch(e){ console.error(e); }
-}
-
-// Expõe helpers do Firestore para o script principal
-window.FB = {
-  ativo: USANDO_FIREBASE && !!db,
-  colRef, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query,
-  orderBy, serverTimestamp, getDocs, db
-};
-window.dispatchEvent(new Event("fb-ready"));
+    conectado = true;
+    console.log("Firebase conectado com sucesso.");
+    } catch (e) {
+    console.error("Erro ao conectar Firebase:", e);
+    }
+  window.FB = {
+    ativo: conectado,
+    colRef,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp,
+    getDocs,
+    db56
+  };
+  window.dispatchEvent(new Event("fb-ready"));
 </script>
+
+
 
 <!-- ===== Lógica do sistema ===== -->
 <script>
